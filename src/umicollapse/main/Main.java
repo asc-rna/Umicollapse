@@ -215,6 +215,10 @@ public class Main{
         }else if(mode.equals("bam") || mode.equals("sam")){
             DeduplicateSAM dedup = new DeduplicateSAM();
 
+            System.out.println("mAlgo: " + mAlgo + mergeStr);
+            System.out.println("algo: " + a + parallelData + algoStr);
+
+
             if(twoPass){
                 dedup.deduplicateAndMergeTwoPass(in, out, a, d, mAlgo, umiLength, k, percentage, umiSeparator, paired, removeUnpaired, removeChimeric, keepUnmapped, trackClusters);
             }else{

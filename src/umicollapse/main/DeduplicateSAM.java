@@ -7,6 +7,7 @@ import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.SAMRecordIterator;
 import htsjdk.samtools.SAMFileWriter;
 import htsjdk.samtools.SAMFileWriterFactory;
+import htsjdk.samtools.SAMFileHeader;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import java.util.stream.Stream;
+
 
 import java.io.File;
 
@@ -27,6 +29,10 @@ import umicollapse.util.ReadFreq;
 import umicollapse.util.ClusterTracker;
 import umicollapse.util.Utils;
 import static umicollapse.util.Utils.HASH_CONST;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 
 public class DeduplicateSAM{
     private int avgUMICount;
@@ -274,9 +280,12 @@ public class DeduplicateSAM{
     // trade off speed for lower memory usage
     // input should be sorted based on alignment for best results
     public void deduplicateAndMergeTwoPass(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, String umiSeparator, boolean paired, boolean removeUnpaired, boolean removeChimeric, boolean keepUnmapped, boolean trackClusters){
+        System.out.println("[" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "] Start the first pass!");
+
+
         SamReader firstPass = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
         Writer writer = new Writer(in, out, firstPass, paired);
-        Map<Alignment, AlignReads> align = new HashMap<>(1 << 16);
+        Map<Alignment, AlignReads> align = new HashMap<>(1 << 29);
         int totalReadCount = 0;
         int unmapped = 0;
         int unpaired = 0;
@@ -353,7 +362,7 @@ public class DeduplicateSAM{
 
         System.gc(); // attempt to clear up memory before second pass
 
-        System.out.println("Done with the first pass!");
+        System.out.println("[" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "] Done with the first pass!");
 
         SAMRead.setDefaultUMIPattern(umiSeparator);
 
@@ -443,6 +452,8 @@ public class DeduplicateSAM{
             idx++;
         }
 
+
+        System.out.println("[" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "] Done with the second pass!");
         try{
             reader.close();
         }catch(Exception e){
@@ -531,9 +542,12 @@ public class DeduplicateSAM{
                 this.set = new HashSet<ReversedRead>();
             }
 
-            this.writer = new SAMFileWriterFactory().makeSAMOrBAMWriter(r.getFileHeader(), false, out);
+            SAMFileHeader header = r.getFileHeader();
+            this.writer = new SAMFileWriterFactory()
+            .makeSAMOrBAMWriter(header, false, out);
             this.paired = paired;
-        }
+        } 
+                    // .setMaxRecordsInRam(1<<27)
 
         public void write(SAMRecord record){
             if(paired){ // must be forwards read
