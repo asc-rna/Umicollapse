@@ -109,7 +109,6 @@ or running benchmarks:
 * `-p`: threshold percentage for identifying adjacent UMIs in the directional algorithm. Default: 0.5.
 * `-t`: parallelize the deduplication of each separate alignment position. Using this is discouraged as it is lacking many features. Default: false.
 * `-T`: parallelize the deduplication of one single alignment position. The data structure can only be `naive`, `bktree`, and `fenwickbktree`. Using this is discouraged as it is lacking many features. Default: false.
-* `--umi-sep`: separator string between the UMI and the rest of the read header. Default: `_`.
 * `--algo`: deduplication algorithm. Either `cc` for connected components, `adj` for adjacency, or `dir` for directional. Default: `dir`.
 * `--merge`: method for identifying which UMI to keep out of every two UMIs. Either `any`, `avgqual`, or `mapqual`. Default: `mapqual` for SAM/BAM mode, `avgqual` for FASTQ mode.
 * `--data`: data structure used in deduplication. Either `naive`, `combo`, `ngram`, `delete`, `trie`, `bktree`, `sortbktree`, `ngrambktree`, `sortngrambktree`, or `fenwickbktree`. Default: `ngrambktree`.

@@ -9,9 +9,11 @@ public class SAMRead extends Read{
     private static Pattern defaultUMIPattern;
     private SAMRecord record;
     private int avgQual;
-
+    private String umi ;
     public SAMRead(SAMRecord record){
         this.record = record;
+        int idx = record.getReadName().lastIndexOf('_');
+        this.umi = (idx == -1 || idx == record.getReadName().length() - 1) ? "" : record.getReadName().substring(idx + 1);
 
         float avg = 0.0f;
 
@@ -31,19 +33,20 @@ public class SAMRead extends Read{
 
     @Override
     public BitSet getUMI(int maxLength){
-        Matcher m = defaultUMIPattern.matcher(record.getReadName());
-        m.find();
-        String umi = m.group(2);
-        if(maxLength >= 0 && umi.length() > maxLength)
-            umi = umi.substring(0, maxLength);
-        return Utils.toBitSet(umi.toUpperCase());
+        String umi_cut = this.umi;
+        if (maxLength >= 0 && umi.length() > maxLength) {
+            umi_cut = this.umi.substring(0, maxLength);
+        }
+
+        return Utils.toBitSet(umi_cut); // 假设 Utils.toBitSet() 内部已经做了 toUpperCase()        
     }
 
     @Override
     public int getUMILength(){
-        Matcher m = defaultUMIPattern.matcher(record.getReadName());
-        m.find();
-        return m.group(2).length();
+        // Matcher m = defaultUMIPattern.matcher(record.getReadName());
+        // m.find();
+        // return m.group(2).length();
+        return umi.length();
     }
 
     @Override

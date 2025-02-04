@@ -50,6 +50,20 @@ public class ClusterTracker{
         }
     }
 
+    public void addAllImp(List<BitSet> s, Map<BitSet, ReadFreq> reads){
+        if (this.track) {
+            // 遍历数组，把所有 BitSet 加入 temp
+            for (BitSet umi : s) {
+                this.temp.add(umi);
+    
+                // 防止 reads.get(umi) 为空导致 NullPointerException
+                ReadFreq rf = reads.get(umi);
+                this.tempFreq += rf.freq;
+                
+            }
+        }
+    }
+
     public void track(BitSet unique, Read read){
         if(this.track){
             for(BitSet s : this.temp)

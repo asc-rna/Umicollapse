@@ -4,15 +4,16 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import umicollapse.util.BitSet;
-import umicollapse.data.DataStructure;
 import umicollapse.util.Read;
 import umicollapse.util.ReadFreq;
 import umicollapse.util.UmiFreq;
 import umicollapse.util.ClusterTracker;
+import umicollapse.data.*;
 
 public class Directional implements Algorithm{
     @Override
@@ -20,6 +21,7 @@ public class Directional implements Algorithm{
         UmiFreq[] freq = new UmiFreq[reads.size()];
         List<Read> res = new ArrayList<>();
         Map<BitSet, Integer> m = new HashMap<>();
+
         int idx = 0;
 
         for(Map.Entry<BitSet, ReadFreq> e : reads.entrySet()){
@@ -27,6 +29,7 @@ public class Directional implements Algorithm{
             m.put(e.getKey(), e.getValue().freq);
             idx++;
         }
+
 
         Arrays.sort(freq, (a, b) -> b.readFreq.freq - a.readFreq.freq);
         data.init(m, umiLength, k);
@@ -43,7 +46,22 @@ public class Directional implements Algorithm{
     }
 
     private void visitAndRemove(BitSet u, Map<BitSet, ReadFreq> reads, DataStructure data, ClusterTracker tracker, int k, float percentage){
+        if (data instanceof Naive) {
+            List<BitSet> ci = ((Naive)data).removeNearImp(u, k, (int)(percentage * (reads.get(u).freq + 1)));
+            tracker.addAllImp(ci, reads);
+
+            for (BitSet v : ci) {
+                if (u.equals(v))
+                    continue;
+
+                visitAndRemove(v, reads, data, tracker, k, percentage);
+            }
+        return;
+        }
+
+
         Set<BitSet> c = data.removeNear(u, k, (int)(percentage * (reads.get(u).freq + 1)));
+
         tracker.addAll(c, reads);
 
         for(BitSet v : c){

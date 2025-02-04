@@ -6,8 +6,10 @@ import static umicollapse.util.Utils.umiDist;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 public class Naive implements DataStructure{
     private Map<BitSet, Integer> umiFreq;
@@ -32,9 +34,28 @@ public class Naive implements DataStructure{
                 it.remove();
             }
         }
-
         return res;
+        
     }
+
+    public List<BitSet> removeNearImp(BitSet umi, int k, int maxFreq) {
+    List<BitSet> res = new ArrayList<>(1);  // 用 ArrayList 替代 HashSet
+
+    Iterator<Map.Entry<BitSet, Integer>> it = umiFreq.entrySet().iterator();
+    while (it.hasNext()) {
+        Map.Entry<BitSet, Integer> e = it.next();
+        BitSet o = e.getKey();
+        int f = e.getValue();
+        int dist = umiDist(umi, o);
+
+        if (dist <= k && (dist == 0 || f <= maxFreq)) {
+            res.add(o);
+            it.remove();
+        }
+    }
+
+    return res;
+    }   
 
     @Override
     public boolean contains(BitSet umi){
